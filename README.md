@@ -122,3 +122,9 @@ Do not fabricate collaborators, reviews, stars, or alternate accounts. GitHub co
 
 MIT
 
+## Operational Safeguards
+
+- Obtain explicit employee consent before biometric enrollment.
+- Restrict attendance records to authorized administrative roles.
+- Define biometric retention and deletion policies before production deployment.
+
