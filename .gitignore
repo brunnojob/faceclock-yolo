@@ -1,0 +1,11 @@
+.env
+.venv/
+__pycache__/
+*.py[cod]
+*.db
+models/*.onnx
+models/*.pt
+data/
+.pytest_cache/
+.ruff_cache/
+
