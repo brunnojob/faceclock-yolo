@@ -128,3 +128,5 @@ MIT
 - Restrict attendance records to authorized administrative roles.
 - Define biometric retention and deletion policies before production deployment.
 
+
+
