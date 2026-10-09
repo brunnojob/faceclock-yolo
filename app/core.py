@@ -66,6 +66,8 @@ class AttendanceStore:
                 )
 
     def propose(self, embedding, action, camera, minimum=0.55, margin=0.05):
+        if not math.isfinite(minimum) or not math.isfinite(margin) or not -1 <= minimum <= 1 or not 0 <= margin <= 2:
+            raise ValueError("finite similarity threshold and margin required")
         if action not in ("clock_in", "clock_out") or not camera or len(camera) > 80:
             raise ValueError("valid action and camera required")
         vector = normalize(embedding)

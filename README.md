@@ -23,3 +23,9 @@ Export a JSON report from the command above, then run `python cloud/sync.py enqu
 ## License
 
 Original source and documentation are MIT licensed; see [LICENSE](LICENSE). Third-party dependencies and media retain their respective terms. Maintained by [Brunno Dev](https://brunnodev.store).
+
+## Implementation update
+
+Identification proposal thresholds and ambiguity margins must be finite and within their supported ranges. Invalid numeric settings are rejected before scoring or recording proposals.
+
+Contribution trailer: `Co-authored-by: nyctophile <33561761+ineedfoundmyway@users.noreply.github.com>`.
