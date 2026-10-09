@@ -1,0 +1,4 @@
+-r requirements.txt
+opencv-python-headless==4.12.0.88
+onnxruntime==1.23.2
+ultralytics==8.3.228
