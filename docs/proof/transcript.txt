@@ -1,0 +1,73 @@
+$ bash -e -o pipefail -c python -m pip install -r requirements.txt
+Collecting cryptography==50.0.1 (from -r requirements.txt (line 1))
+  Downloading cryptography-50.0.1-cp311-abi3-manylinux_2_34_x86_64.whl.metadata (4.3 kB)
+Collecting fastapi==0.143.0 (from -r requirements.txt (line 2))
+  Downloading fastapi-0.143.0-py3-none-any.whl.metadata (26 kB)
+Collecting uvicorn==0.54.0 (from -r requirements.txt (line 3))
+  Downloading uvicorn-0.54.0-py3-none-any.whl.metadata (6.6 kB)
+Collecting python-multipart==0.0.22 (from -r requirements.txt (line 4))
+  Downloading python_multipart-0.0.22-py3-none-any.whl.metadata (1.8 kB)
+Collecting cffi>=2.0.0 (from cryptography==50.0.1->-r requirements.txt (line 1))
+  Downloading cffi-2.1.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (2.5 kB)
+Collecting starlette>=0.46.0 (from fastapi==0.143.0->-r requirements.txt (line 2))
+  Downloading starlette-1.7.0-py3-none-any.whl.metadata (6.6 kB)
+Collecting pydantic>=2.9.0 (from fastapi==0.143.0->-r requirements.txt (line 2))
+  Downloading pydantic-2.14.0-py3-none-any.whl.metadata (131 kB)
+Collecting typing-extensions>=4.8.0 (from fastapi==0.143.0->-r requirements.txt (line 2))
+  Downloading typing_extensions-4.16.0-py3-none-any.whl.metadata (3.3 kB)
+Collecting typing-inspection>=0.4.2 (from fastapi==0.143.0->-r requirements.txt (line 2))
+  Downloading typing_inspection-0.4.4-py3-none-any.whl.metadata (2.6 kB)
+Collecting annotated-doc>=0.0.2 (from fastapi==0.143.0->-r requirements.txt (line 2))
+  Downloading annotated_doc-0.0.5-py3-none-any.whl.metadata (6.5 kB)
+Collecting opentelemetry-api>=1.44.0 (from fastapi==0.143.0->-r requirements.txt (line 2))
+  Downloading opentelemetry_api-1.45.1-py3-none-any.whl.metadata (1.4 kB)
+Collecting click>=7.0 (from uvicorn==0.54.0->-r requirements.txt (line 3))
+  Downloading click-8.5.0-py3-none-any.whl.metadata (2.6 kB)
+Collecting h11>=0.8 (from uvicorn==0.54.0->-r requirements.txt (line 3))
+  Downloading h11-0.16.0-py3-none-any.whl.metadata (8.3 kB)
+Collecting pycparser (from cffi>=2.0.0->cryptography==50.0.1->-r requirements.txt (line 1))
+  Downloading pycparser-3.11-py3-none-any.whl.metadata (8.2 kB)
+Collecting annotated-types>=0.6.0 (from pydantic>=2.9.0->fastapi==0.143.0->-r requirements.txt (line 2))
+  Downloading annotated_types-0.8.0-py3-none-any.whl.metadata (15 kB)
+Collecting pydantic-core==2.50.0 (from pydantic>=2.9.0->fastapi==0.143.0->-r requirements.txt (line 2))
+  Downloading pydantic_core-2.50.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (6.5 kB)
+Collecting anyio<5,>=4.0.0 (from starlette>=0.46.0->fastapi==0.143.0->-r requirements.txt (line 2))
+  Downloading anyio-4.15.1-py3-none-any.whl.metadata (4.7 kB)
+Collecting idna>=2.8 (from anyio<5,>=4.0.0->starlette>=0.46.0->fastapi==0.143.0->-r requirements.txt (line 2))
+  Downloading idna-3.20-py3-none-any.whl.metadata (7.2 kB)
+Downloading cryptography-50.0.1-cp311-abi3-manylinux_2_34_x86_64.whl (4.7 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.7/4.7 MB 65.7 MB/s  0:00:00
+Downloading fastapi-0.143.0-py3-none-any.whl (144 kB)
+Downloading uvicorn-0.54.0-py3-none-any.whl (87 kB)
+Downloading python_multipart-0.0.22-py3-none-any.whl (24 kB)
+Downloading annotated_doc-0.0.5-py3-none-any.whl (5.3 kB)
+Downloading cffi-2.1.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (221 kB)
+Downloading click-8.5.0-py3-none-any.whl (125 kB)
+Downloading h11-0.16.0-py3-none-any.whl (37 kB)
+Downloading opentelemetry_api-1.45.1-py3-none-any.whl (60 kB)
+Downloading pydantic-2.14.0-py3-none-any.wh
+Full transcript in the execution-proof artifact.
+$ bash -e -o pipefail -c python -m unittest discover -v -s tests
+test_consent_review_integrity_and_revocation (test_core.CoreTests.test_consent_review_integrity_and_revocation) ... ok
+test_invalid_thresholds_do_not_create_reviews (test_core.CoreTests.test_invalid_thresholds_do_not_create_reviews) ... ok
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.017s
+
+OK
+
+$ bash -e -o pipefail -c python -m unittest discover -v -s cloud
+test_confirmed_receipt_marks_the_report_sent (test_receipts.ReceiptTests.test_confirmed_receipt_marks_the_report_sent) ... ok
+test_events_reject_empty_values_of_the_wrong_type (test_receipts.ReceiptTests.test_events_reject_empty_values_of_the_wrong_type) ... ok
+test_invalid_receipts_keep_the_report_pending (test_receipts.ReceiptTests.test_invalid_receipts_keep_the_report_pending) ... ok
+test_omitted_events_and_empty_list_have_the_same_key (test_receipts.ReceiptTests.test_omitted_events_and_empty_list_have_the_same_key) ... ok
+test_conflicting_key_cannot_overwrite_a_report (test_sync.OutboxTests.test_conflicting_key_cannot_overwrite_a_report) ... ok
+test_retries_keep_reports_until_confirmed (test_sync.OutboxTests.test_retries_keep_reports_until_confirmed) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.078s
+
+OK
+
+$ python .proof/demo.py
+{"recorded_events": 1, "review_required": true, "revocation_effective": true, "tampering_detected": true}
