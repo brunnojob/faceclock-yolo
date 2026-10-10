@@ -36,7 +36,7 @@ Collecting anyio<5,>=4.0.0 (from starlette>=0.46.0->fastapi==0.143.0->-r require
 Collecting idna>=2.8 (from anyio<5,>=4.0.0->starlette>=0.46.0->fastapi==0.143.0->-r requirements.txt (line 2))
   Downloading idna-3.20-py3-none-any.whl.metadata (7.2 kB)
 Downloading cryptography-50.0.1-cp311-abi3-manylinux_2_34_x86_64.whl (4.7 MB)
-   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.7/4.7 MB 65.7 MB/s  0:00:00
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.7/4.7 MB 62.9 MB/s  0:00:00
 Downloading fastapi-0.143.0-py3-none-any.whl (144 kB)
 Downloading uvicorn-0.54.0-py3-none-any.whl (87 kB)
 Downloading python_multipart-0.0.22-py3-none-any.whl (24 kB)
@@ -52,7 +52,7 @@ test_consent_review_integrity_and_revocation (test_core.CoreTests.test_consent_r
 test_invalid_thresholds_do_not_create_reviews (test_core.CoreTests.test_invalid_thresholds_do_not_create_reviews) ... ok
 
 ----------------------------------------------------------------------
-Ran 2 tests in 0.017s
+Ran 2 tests in 0.014s
 
 OK
 
@@ -65,7 +65,7 @@ test_conflicting_key_cannot_overwrite_a_report (test_sync.OutboxTests.test_confl
 test_retries_keep_reports_until_confirmed (test_sync.OutboxTests.test_retries_keep_reports_until_confirmed) ... ok
 
 ----------------------------------------------------------------------
-Ran 6 tests in 0.078s
+Ran 6 tests in 0.276s
 
 OK
 
