@@ -1,6 +1,6 @@
 from functools import lru_cache
 
-from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, UploadFile
+from fastapi import Depends, FastAPI, File, Form, HTTPException, Query, Request, UploadFile
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
@@ -97,7 +97,7 @@ async def recognize(
 
 
 @app.get("/v1/attendance/events", response_model=list[EventResponse], dependencies=[Depends(require_api_key)])
-def events(limit: int = 100, db: Session = Depends(db_session)) -> list[EventResponse]:
+def events(limit: int = Query(default=100, ge=1), db: Session = Depends(db_session)) -> list[EventResponse]:
     rows = db.scalars(select(AttendanceEvent).order_by(AttendanceEvent.occurred_at.desc()).limit(min(limit, 500))).all()
     return [
         EventResponse(
@@ -113,4 +113,3 @@ def events(limit: int = 100, db: Session = Depends(db_session)) -> list[EventRes
         )
         for row in rows
     ]
-
