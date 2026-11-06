@@ -55,6 +55,12 @@ def resources(load_vision=False):
                 ) from error
     return store, vision
 
+from fastapi import Depends, FastAPI, File, Form, HTTPException, Query, Request, UploadFile
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.util import get_remote_address
+from sqlalchemy import select
+from sqlalchemy.orm import Session
 
 @app.get("/health")
 def health():
@@ -117,6 +123,50 @@ def confirm(review_id: str, decision: Review):
         raise HTTPException(409, str(error)) from error
 
 
+@app.post("/v1/attendance/recognize", response_model=RecognitionResponse, dependencies=[Depends(require_api_key)])
+@limiter.limit(f"{settings.rate_limit_per_minute}/minute")
+async def recognize(
+    request: Request,
+    action: AttendanceAction = Form(),
+    camera_id: str = Form(min_length=1, max_length=80),
+    image: UploadFile = File(),
+    db: Session = Depends(db_session),
+) -> RecognitionResponse:
+    try:
+        sample = face_engine().extract(await image.read())
+    except ValueError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+    service = AttendanceService(db)
+    employee, score = service.match(sample.embedding)
+    event = service.record(employee, action.value, score, camera_id)
+    return RecognitionResponse(
+        event_id=event.id,
+        decision=event.decision,
+        action=action,
+        employee_id=employee.id if employee else None,
+        display_name=employee.display_name if employee else None,
+        similarity=score,
+        reason=event.reason,
+    )
+
+
+@app.get("/v1/attendance/events", response_model=list[EventResponse], dependencies=[Depends(require_api_key)])
+def events(limit: int = Query(default=100, ge=1), db: Session = Depends(db_session)) -> list[EventResponse]:
+    rows = db.scalars(select(AttendanceEvent).order_by(AttendanceEvent.occurred_at.desc()).limit(min(limit, 500))).all()
+    return [
+        EventResponse(
+            id=row.id,
+            employee_id=row.employee_id,
+            action=row.action,
+            decision=row.decision,
+            similarity=float(row.similarity),
+            camera_id=row.camera_id,
+            reason=row.reason,
+            occurred_at=row.occurred_at,
+            event_hash=row.event_hash,
+        )
+        for row in rows
+    ]
 @app.delete("/v1/employees/{employee_id}", dependencies=[Depends(authorized)])
 def revoke(employee_id: str):
     database, _ = resources()

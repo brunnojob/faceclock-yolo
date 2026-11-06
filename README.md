@@ -40,4 +40,6 @@ Contribution trailer: `Co-authored-by: nyctophile <33561761+ineedfoundmyway@user
 
 [Verified run](https://github.com/brunnojob/faceclock-yolo/actions/runs/38017954159) · [Execution report](docs/proof/evidence.json)
 
+# UPDATED FOR ME RN 
+
 Run `python .proof/record.py` after installing the prerequisites above. The scenarios execute repository code and verify exit codes and expected output. CI publishes `execution-proof` with the transcript, input fingerprints and source commit. The downloadable report identifies the exact tested version; the workflow badge tracks the latest run.
