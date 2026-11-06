@@ -1,57 +1,45 @@
-from dataclasses import dataclass
-
-import cv2
-import numpy as np
-import onnxruntime as ort
-from ultralytics import YOLO
-
-from app.config import get_settings
+from pathlib import Path
+from .core import normalize
 
 
-@dataclass(frozen=True)
-class FaceSample:
-    embedding: np.ndarray
-    confidence: float
-    quality: float
+class VisionPipeline:
+    def __init__(self, detector_path, encoder_path):
+        import onnxruntime as ort
+        from ultralytics import YOLO
 
-
-class FaceEngine:
-    def __init__(self) -> None:
-        settings = get_settings()
-        self.detector = YOLO(settings.yolo_model)
-        self.encoder = ort.InferenceSession(settings.arcface_model, providers=["CPUExecutionProvider"])
+        if not Path(detector_path).is_file() or not Path(encoder_path).is_file():
+            raise FileNotFoundError("configured model weights are missing")
+        self.detector = YOLO(detector_path)
+        self.encoder = ort.InferenceSession(
+            encoder_path, providers=["CPUExecutionProvider"]
+        )
         self.input_name = self.encoder.get_inputs()[0].name
-        self.model_version = f"{settings.yolo_model}|{settings.arcface_model}"
 
-    def extract(self, image_bytes: bytes) -> FaceSample:
-        raw = np.frombuffer(image_bytes, np.uint8)
-        image = cv2.imdecode(raw, cv2.IMREAD_COLOR)
-        if image is None:
-            raise ValueError("Invalid image")
-        prediction = self.detector.predict(image, verbose=False, conf=0.6)[0]
-        boxes = prediction.boxes
-        if boxes is None or len(boxes) != 1:
-            raise ValueError("Exactly one face must be visible")
-        xyxy = boxes.xyxy[0].cpu().numpy().astype(int)
-        confidence = float(boxes.conf[0].cpu().item())
-        height, width = image.shape[:2]
-        x1, y1, x2, y2 = xyxy
-        x1, y1, x2, y2 = max(0, x1), max(0, y1), min(width, x2), min(height, y2)
-        face = image[y1:y2, x1:x2]
-        if face.size == 0:
-            raise ValueError("Invalid face region")
-        gray = cv2.cvtColor(face, cv2.COLOR_BGR2GRAY)
-        sharpness = float(cv2.Laplacian(gray, cv2.CV_64F).var())
-        brightness = float(gray.mean())
-        area_ratio = float((x2 - x1) * (y2 - y1) / (width * height))
-        quality = min(sharpness / 150.0, 1.0) * min(area_ratio / 0.08, 1.0)
-        if sharpness < 35 or brightness < 35 or brightness > 225 or area_ratio < 0.02:
-            raise ValueError("Image quality is insufficient")
-        blob = cv2.resize(face, (112, 112)).astype(np.float32)
-        blob = cv2.cvtColor(blob, cv2.COLOR_BGR2RGB)
-        blob = (blob - 127.5) / 127.5
-        blob = np.transpose(blob, (2, 0, 1))[None, ...]
-        embedding = self.encoder.run(None, {self.input_name: blob})[0][0].astype(np.float32)
-        embedding /= max(float(np.linalg.norm(embedding)), 1e-12)
-        return FaceSample(embedding=embedding, confidence=confidence, quality=quality)
+    def embed(self, image_bytes):
+        import cv2
+        import numpy as np
 
+        if not image_bytes or len(image_bytes) > 8 * 1024 * 1024:
+            raise ValueError("image missing or too large")
+        image = cv2.imdecode(np.frombuffer(image_bytes, np.uint8), cv2.IMREAD_COLOR)
+        if image is None or max(image.shape[:2]) > 8192:
+            raise ValueError("invalid image dimensions")
+        detections = self.detector.predict(image, verbose=False, conf=0.7)[0].boxes
+        if detections is None or len(detections) != 1:
+            raise ValueError("exactly one face required")
+        x1, y1, x2, y2 = [int(value) for value in detections.xyxy[0].tolist()]
+        crop = image[
+            max(0, y1) : min(image.shape[0], y2), max(0, x1) : min(image.shape[1], x2)
+        ]
+        if min(crop.shape[:2]) < 64:
+            raise ValueError("face too small")
+        gray = cv2.cvtColor(crop, cv2.COLOR_BGR2GRAY)
+        if cv2.Laplacian(gray, cv2.CV_64F).var() < 30 or not 35 < gray.mean() < 220:
+            raise ValueError("insufficient face image quality")
+        rgb = cv2.cvtColor(cv2.resize(crop, (112, 112)), cv2.COLOR_BGR2RGB).astype(
+            np.float32
+        )
+        tensor = np.expand_dims(np.transpose((rgb - 127.5) / 127.5, (2, 0, 1)), 0)
+        return normalize(
+            self.encoder.run(None, {self.input_name: tensor})[0].reshape(-1)
+        )

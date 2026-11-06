@@ -1,126 +1,45 @@
-# FaceClock YOLO
+# FaceClock Review API
 
-FaceClock YOLO is a privacy-first reference system for employee clock-in and clock-out verification through an establishment camera. It combines YOLO face detection, an ArcFace-compatible ONNX encoder, encrypted biometric templates, similarity-based matching, and a tamper-evident attendance ledger.
+[View execution evidence](https://brunnojob.github.io/devstart-lab/proofs/faceclock-yolo/)
 
-## Highlights
+Face detection, embeddings, identification proposals, and human review before attendance recording, with encrypted templates and an authenticated audit trail.
 
-- YOLO-based single-face detection
-- ArcFace-compatible 512-dimensional embeddings
-- AES-256-GCM encryption at rest with per-template nonces
-- No raw enrollment or recognition images stored
-- Explicit biometric consent during enrollment
-- Separate accepted, rejected, and human-review decisions
-- HMAC-SHA256 chained attendance events
-- API-key authentication and per-IP rate limiting
-- SQLite by default with SQLAlchemy portability
-- Docker and automated security tests
+## Run
 
-## Responsible use
+Requirements: Python 3.11+, FastAPI, YOLO, and ONNX.
 
-This repository is a technical reference, not a turnkey surveillance product. Employee biometric processing may be regulated by the LGPD, GDPR, BIPA, labor rules, collective agreements, or local law. Obtain informed consent or another valid legal basis, provide a non-biometric attendance alternative, define retention and deletion policies, restrict camera coverage, document access, and complete a privacy impact assessment before deployment.
-
-Recognition output must not be the sole basis for hiring, dismissal, payroll deductions, discipline, or other high-impact employment decisions. Scores between the review and acceptance thresholds are deliberately routed to a human. The included image-quality checks are not a production-grade liveness solution; add a tested anti-spoofing model and supervised fallback before real-world use.
-
-## Architecture
-
-```mermaid
-flowchart TD
-    C[Camera frame] --> Y[YOLO face detector]
-    Y --> Q[Quality gate]
-    Q --> A[ArcFace ONNX encoder]
-    A --> M[Encrypted template matcher]
-    M --> D{Decision}
-    D -->|High confidence| E[Attendance event]
-    D -->|Uncertain| R[Human review]
-    D -->|No match| X[Rejected attempt]
-    E --> H[HMAC hash chain]
+```sh
+python -m pip install -r requirements.txt
+python -m unittest discover -s tests
+uvicorn app.main:app --host 127.0.0.1 --port 8080
 ```
 
-## Requirements
+## Behavior
 
-- Python 3.11 or 3.12
-- A YOLO face-detection weight file at `models/yolov8n-face.pt`
-- An ArcFace-compatible ONNX model at `models/arcface_w600k_r50.onnx`
-- A long random API key and encryption key
+Set `FACECLOCK_API_KEY` to at least 32 characters. `FACECLOCK_ENCRYPTION_KEY` and `FACECLOCK_AUDIT_KEY` must contain random 32-byte keys encoded as base64. For vision processing, install `requirements-vision.txt` and supply compatible models through `FACECLOCK_DETECTOR` and `FACECLOCK_ENCODER`. Model weights and accuracy validation are not included. Enrollment requires consent and 3 to 8 images. `/v1/export` produces a report. Revocation deletes templates.
 
-Model weights are intentionally excluded. Review their source, license, provenance, demographic performance, and checksum before use.
+## Optional report archive
 
-## Setup
-
-```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -e '.[dev]'
-cp .env.example .env
-python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
-uvicorn app.main:app --reload
-```
-
-Open `http://localhost:8000/docs` for the interactive API documentation.
-
-## Docker
-
-```bash
-cp .env.example .env
-docker compose up --build
-```
-
-## Enrollment
-
-Enrollment requires three to eight images of one consenting employee. Use different head angles and lighting conditions.
-
-```bash
-curl -X POST http://localhost:8000/v1/employees/enroll \
-  -H "X-API-Key: $FACECLOCK_API_KEY" \
-  -F "external_id=EMP-001" \
-  -F "display_name=Alex Morgan" \
-  -F "consent=true" \
-  -F "images=@front.jpg" \
-  -F "images=@left.jpg" \
-  -F "images=@right.jpg"
-```
-
-## Clock in or out
-
-```bash
-curl -X POST http://localhost:8000/v1/attendance/recognize \
-  -H "X-API-Key: $FACECLOCK_API_KEY" \
-  -F "action=clock_in" \
-  -F "camera_id=front-desk-01" \
-  -F "image=@frame.jpg"
-```
-
-## Decision policy
-
-| Similarity | Result | Required handling |
-|---|---|---|
-| At or above `MATCH_THRESHOLD` | Accepted | Record attendance |
-| Between review and match thresholds | Review | Confirm with a human |
-| Below `REVIEW_THRESHOLD` | Rejected | Offer a non-biometric fallback |
-
-Thresholds are deployment-specific. Calibrate them with representative, consented validation data and measure false-match and false-non-match rates across relevant groups.
-
-## Tests
-
-```bash
-pytest
-ruff check .
-```
-
-## GitHub Achievements
-
-The project name references both the vision model and GitHub's YOLO achievement. Achievements should be earned through genuine repository activity:
-
-- **YOLO:** merge your own pull request without a review.
-- **Quickdraw:** close an issue or pull request within five minutes of opening it.
-- **Pair Extraordinaire:** merge a pull request containing a valid `Co-authored-by` trailer for a real collaborator who contributed.
-- **Starstruck:** another GitHub user must star the repository.
-
-Do not fabricate collaborators, reviews, stars, or alternate accounts. GitHub controls eligibility and award timing.
+Export a JSON report from the command above, then run `python cloud/sync.py enqueue result.json --project faceclock-yolo` and `python cloud/sync.py sync`. Synchronization requires `BRUNNODEV_ACCESS_TOKEN` and the external operations API; the local outbox retains unacknowledged reports.
 
 ## License
 
-MIT
+Original source and documentation are MIT licensed; see [LICENSE](LICENSE). Third-party dependencies and media retain their respective terms. Maintained by [Brunno Dev](https://brunnodev.store).
+
+## Implementation update
+
+Identification proposal thresholds and ambiguity margins must be finite and within their supported ranges. Invalid numeric settings are rejected before scoring or recording proposals.
+
+Contribution trailer: `Co-authored-by: nyctophile <33561761+ineedfoundmyway@users.noreply.github.com>`.
+
+## Execution proof
+
+[![Executable proof](https://github.com/brunnojob/faceclock-yolo/actions/workflows/proof.yml/badge.svg)](https://github.com/brunnojob/faceclock-yolo/actions/workflows/proof.yml)
+
+![Recorded program execution](docs/proof/execution.svg)
+
+[Verified run](https://github.com/brunnojob/faceclock-yolo/actions/runs/38017954159) · [Execution report](docs/proof/evidence.json)
 
 # UPDATED FOR ME RN 
 
+Run `python .proof/record.py` after installing the prerequisites above. The scenarios execute repository code and verify exit codes and expected output. CI publishes `execution-proof` with the transcript, input fingerprints and source commit. The downloadable report identifies the exact tested version; the workflow badge tracks the latest run.
