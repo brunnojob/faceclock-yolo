@@ -1,4 +1,4 @@
 date=2026-11-18
-seq=105
-ts=1794933154
-scope=weights
+seq=106
+ts=1794933212
+scope=frame-buffer
