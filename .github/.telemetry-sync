@@ -1,4 +1,4 @@
 date=2026-11-19
-seq=95
-ts=1795029509
-scope=attendance
+seq=96
+ts=1795029521
+scope=frame-buffer
