@@ -1,1 +1,2 @@
 - Maintenance check #7 (closes #8)
+- Maintenance check #7 (closes #10)
