@@ -1,4 +1,4 @@
 date=2026-11-25
-seq=32
-ts=1795598420
-scope=weights
+seq=33
+ts=1795598425
+scope=inference
