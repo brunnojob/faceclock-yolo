@@ -1,4 +1,4 @@
 date=2026-11-27
-seq=402
-ts=1795748945
-scope=inference
+seq=403
+ts=1795748946
+scope=frame-buffer
